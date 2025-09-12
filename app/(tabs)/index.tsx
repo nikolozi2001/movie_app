@@ -1,8 +1,10 @@
 import { useRouter } from "expo-router";
+import React from "react";
 import {
   ActivityIndicator,
   FlatList,
   Image,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -30,13 +32,39 @@ const Index = () => {
     data: trendingMovies,
     loading: trendingLoading,
     error: trendingError,
+    refetch: refetchTrending,
   } = useFetch(getTrendingMovies);
 
   const {
     data: movies,
     loading: moviesLoading,
     error: moviesError,
+    refetch: refetchMovies,
   } = useFetch(() => fetchMovies({ query: "" }));
+
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      // Refetch both data sources
+      await Promise.all([
+        refetchTrending(),
+        refetchMovies(),
+      ]);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchTrending, refetchMovies]);
+
+  // Alternative: Using the custom hook (uncomment to use)
+  // const { refreshing, onRefresh, refreshControlProps } = usePullToRefresh({
+  //   onRefresh: async () => {
+  //     await Promise.all([refetchTrending(), refetchMovies()]);
+  //   }
+  // });
 
   return (
     <ScreenErrorBoundary
@@ -44,8 +72,7 @@ const Index = () => {
       fallbackMessage="We couldn't load the movie data. Please check your connection and try again."
       onRetry={() => {
         clearError();
-        // You could also trigger a refetch here
-        window.location.reload(); // Simple reload for demo
+        onRefresh(); // Use the proper refresh function
       }}
     >
       <View className="flex-1 bg-primary">
@@ -59,6 +86,16 @@ const Index = () => {
           className="flex-1 px-5"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ minHeight: "100%", paddingBottom: 10 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={["#AB8BFF"]}
+              tintColor="#AB8BFF"
+              title="Refreshing movies..."
+              titleColor="#AB8BFF"
+            />
+          }
         >
           <Image source={icons.logo} className="w-12 h-10 mt-20 mb-5 mx-auto" />
 
