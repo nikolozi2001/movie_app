@@ -1,7 +1,6 @@
 import { useRouter } from "expo-router";
 import React from "react";
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   RefreshControl,
@@ -19,6 +18,7 @@ import useFetch from "@/services/usefetch";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 
+import HomeSkeleton from "@/components/HomeSkeleton";
 import MovieCard from "@/components/MovieCard";
 import ScreenErrorBoundary from "@/components/ScreenErrorBoundary";
 import SearchBar from "@/components/SearchBar";
@@ -100,11 +100,7 @@ const Index = () => {
           <Image source={icons.logo} className="w-12 h-10 mt-20 mb-5 mx-auto" />
 
           {moviesLoading || trendingLoading ? (
-            <ActivityIndicator
-              size="large"
-              color="#AB8BFF"
-              className="mt-10 self-center"
-            />
+            <HomeSkeleton />
           ) : moviesError || trendingError ? (
             <View className="flex-1 justify-center items-center mt-10">
               <Text className="text-white text-lg mb-4">Failed to load content</Text>
