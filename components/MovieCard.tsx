@@ -2,6 +2,7 @@ import { Link } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 import { icons } from "@/constants/icons";
+import OptimizedImage from "./OptimizedImage";
 
 const MovieCard = ({
   id,
@@ -13,14 +14,17 @@ const MovieCard = ({
   return (
     <Link href={`/movies/${id}`} asChild>
       <TouchableOpacity className="w-[30%]">
-        <Image
+        <OptimizedImage
           source={{
             uri: poster_path
               ? `https://image.tmdb.org/t/p/w500${poster_path}`
               : "https://placehold.co/600x400/1a1a1a/FFFFFF.png",
           }}
           className="w-full h-52 rounded-lg"
-          resizeMode="cover"
+          contentFit="cover"
+          placeholder="https://placehold.co/600x400/1a1a1a/FFFFFF.png?text=Loading..."
+          priority="normal"
+          cachePolicy="memory-disk"
         />
 
         <Text className="text-sm font-bold text-white mt-2" numberOfLines={1}>

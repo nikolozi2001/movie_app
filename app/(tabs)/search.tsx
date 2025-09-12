@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Image, Text, View } from "react-native";
 
 import { icons } from "@/constants/icons";
@@ -13,6 +13,7 @@ import SearchBar from "@/components/SearchBar";
 
 const Search = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const lastSearchQueryRef = useRef("");
 
   const {
     data: movies = [],
@@ -32,17 +33,19 @@ const Search = () => {
       if (searchQuery.trim()) {
         await loadMovies();
 
-        // Call updateSearchCount only if there are results
-        if (movies?.length! > 0 && movies?.[0]) {
+        // Call updateSearchCount only if there are results and this is a new search
+        if (movies && movies.length > 0 && movies[0] && lastSearchQueryRef.current !== searchQuery) {
           await updateSearchCount(searchQuery, movies[0]);
+          lastSearchQueryRef.current = searchQuery;
         }
       } else {
         reset();
+        lastSearchQueryRef.current = "";
       }
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+  }, [searchQuery, loadMovies, movies, reset]);
 
   return (
     <View className="flex-1 bg-primary">
