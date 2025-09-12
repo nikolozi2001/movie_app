@@ -2,6 +2,8 @@ import { Link } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
 import { icons } from "@/constants/icons";
+import { useFavorites } from "@/hooks/useFavorites";
+import { Ionicons } from "@expo/vector-icons";
 import OptimizedImage from "./OptimizedImage";
 
 const MovieCard = ({
@@ -11,9 +13,37 @@ const MovieCard = ({
   vote_average,
   release_date,
 }: Movie) => {
+  const { toggleFavoriteMovie, checkIsFavorite } = useFavorites();
+  const isFavorite = checkIsFavorite(id);
+
+  const handleToggleFavorite = async (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await toggleFavoriteMovie({
+        id,
+        poster_path,
+        title,
+        vote_average,
+        release_date,
+        adult: false,
+        backdrop_path: "",
+        genre_ids: [],
+        original_language: "",
+        original_title: title,
+        overview: "",
+        popularity: 0,
+        video: false,
+        vote_count: 0,
+      });
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  };
+
   return (
     <Link href={`/movies/${id}`} asChild>
-      <TouchableOpacity className="w-[30%]">
+      <TouchableOpacity className="w-[30%] relative">
         <OptimizedImage
           source={{
             uri: poster_path
@@ -26,6 +56,18 @@ const MovieCard = ({
           priority="normal"
           cachePolicy="memory-disk"
         />
+
+        {/* Favorite Button */}
+        <TouchableOpacity
+          onPress={handleToggleFavorite}
+          className="absolute top-2 right-2 bg-black/50 rounded-full p-1"
+        >
+          <Ionicons
+            name={isFavorite ? "heart" : "heart-outline"}
+            size={20}
+            color={isFavorite ? "#FF6B6B" : "#FFFFFF"}
+          />
+        </TouchableOpacity>
 
         <Text className="text-sm font-bold text-white mt-2" numberOfLines={1}>
           {title}

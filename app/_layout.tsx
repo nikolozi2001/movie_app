@@ -1,4 +1,5 @@
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { FavoritesProvider } from "@/hooks/useFavorites";
 import { Stack } from "expo-router";
 import { StatusBar } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -8,22 +9,24 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
-        <StatusBar hidden={true} />
+        <FavoritesProvider>
+          <StatusBar hidden={true} />
 
-        <Stack>
-          <Stack.Screen
-            name="(tabs)"
-            options={{
-              headerShown: false,
-            }}
-          />
-          <Stack.Screen
-            name="movies/[id]"
-            options={{
-              headerShown: false,
-            }}
-          />
-        </Stack>
+          <Stack>
+            <Stack.Screen
+              name="(tabs)"
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="movies/[id]"
+              options={{
+                headerShown: false,
+              }}
+            />
+          </Stack>
+        </FavoritesProvider>
       </SafeAreaProvider>
     </ErrorBoundary>
   );
