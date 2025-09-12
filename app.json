@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "catch-the-food",
-    "slug": "catch-the-food",
+    "name": "movie_app",
+    "slug": "movie_app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "catchthefood",
+    "scheme": "movieapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
