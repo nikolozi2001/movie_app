@@ -66,7 +66,7 @@ const Index = () => {
               placeholder="Search for a movie"
             />
 
-            {trendingMovies && (
+            {trendingMovies && trendingMovies.length > 0 && (
               <View className="mt-10">
                 <Text className="text-lg text-white font-bold mb-3">
                   Trending Movies
@@ -75,14 +75,16 @@ const Index = () => {
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   className="mb-4 mt-3"
-                  data={trendingMovies}
+                  data={trendingMovies.filter((movie, index, self) => 
+                    index === self.findIndex(m => m.movie_id === movie.movie_id)
+                  )}
                   contentContainerStyle={{
                     gap: 26,
                   }}
                   renderItem={({ item, index }) => (
                     <TrendingCard movie={item} index={index} />
                   )}
-                  keyExtractor={(item) => item.movie_id.toString()}
+                  keyExtractor={(item, index) => `trending-${item.movie_id}-${index}`}
                   ItemSeparatorComponent={() => <View className="w-4" />}
                 />
               </View>
@@ -94,9 +96,11 @@ const Index = () => {
               </Text>
 
               <FlatList
-                data={movies}
+                data={movies?.filter((movie, index, self) => 
+                  index === self.findIndex(m => m.id === movie.id)
+                ) || []}
                 renderItem={({ item }) => <MovieCard {...item} />}
-                keyExtractor={(item) => item.id.toString()}
+                keyExtractor={(item, index) => `movie-${item.id}-${index}`}
                 numColumns={3}
                 columnWrapperStyle={{
                   justifyContent: "flex-start",
