@@ -4,6 +4,7 @@ import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 import { StatusBar } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "./global.css";
 
@@ -13,27 +14,29 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <ErrorBoundary>
-      <SafeAreaProvider>
-        <FavoritesProvider>
-          <StatusBar hidden={true} />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ErrorBoundary>
+        <SafeAreaProvider>
+          <FavoritesProvider>
+            <StatusBar hidden={true} />
 
-          <Stack>
-            <Stack.Screen
-              name="(tabs)"
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="movies/[id]"
-              options={{
-                headerShown: false,
-              }}
-            />
-          </Stack>
-        </FavoritesProvider>
-      </SafeAreaProvider>
-    </ErrorBoundary>
+            <Stack>
+              <Stack.Screen
+                name="(tabs)"
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="movies/[id]"
+                options={{
+                  headerShown: false,
+                }}
+              />
+            </Stack>
+          </FavoritesProvider>
+        </SafeAreaProvider>
+      </ErrorBoundary>
+    </GestureHandlerRootView>
   );
 }

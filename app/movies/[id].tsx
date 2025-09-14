@@ -1,3 +1,4 @@
+import * as Haptics from "expo-haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -10,6 +11,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  Easing,
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withSequence,
+  withSpring,
+  withTiming,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { icons } from "@/constants/icons";
@@ -34,6 +46,15 @@ const Details = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const [videos, setVideos] = useState<MovieVideo[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Animation values
+  const scale = useSharedValue(1);
+  const rotation = useSharedValue(0);
+  const opacity = useSharedValue(1);
+  const pulseScale = useSharedValue(1);
+  const entranceScale = useSharedValue(0);
+  const entranceOpacity = useSharedValue(0);
 
   const { data: movie, loading } = useFetch(() =>
     fetchMovieDetails(id as string)
@@ -54,9 +75,59 @@ const Details = () => {
     }
   }, [id]);
 
+  // Entrance animation
+  useEffect(() => {
+    if (!loading && movie) {
+      entranceScale.value = withSpring(1, { damping: 12, stiffness: 100 });
+      entranceOpacity.value = withTiming(1, { duration: 500 });
+    }
+  }, [loading, movie, entranceScale, entranceOpacity]);
+
+  // Pulse animation for idle state
+  useEffect(() => {
+    if (!isLoading && !loading) {
+      pulseScale.value = withRepeat(
+        withSequence(
+          withTiming(1.05, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+          withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) })
+        ),
+        -1,
+        true
+      );
+    } else {
+      pulseScale.value = withTiming(1, { duration: 200 });
+    }
+  }, [isLoading, loading, pulseScale]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { scale: scale.value * pulseScale.value * entranceScale.value },
+        { rotate: `${rotation.value}deg` },
+      ],
+      opacity: opacity.value * entranceOpacity.value,
+    };
+  });
+
   const handlePlayPress = async () => {
     console.log("Play button pressed");
     console.log("Available videos:", videos.length);
+
+    // Start loading animation
+    setIsLoading(true);
+
+    // Animate button press
+    scale.value = withSequence(
+      withTiming(0.8, { duration: 100 }),
+      withSpring(1, { damping: 10, stiffness: 200 })
+    );
+
+    // Add a subtle rotation effect
+    rotation.value = withSequence(
+      withTiming(5, { duration: 100 }),
+      withTiming(-5, { duration: 100 }),
+      withTiming(0, { duration: 100 })
+    );
 
     const trailer = videos.find(
       (video) => video.type === "Trailer" && video.site === "YouTube"
@@ -86,7 +157,25 @@ const Details = () => {
       console.log("No trailer or homepage available");
       Alert.alert("No Trailer Available", "Trailer not available for this movie");
     }
+
+    // Stop loading animation
+    setIsLoading(false);
   };
+
+  const tapGesture = Gesture.Tap()
+    .onStart(() => {
+      // Add haptic feedback
+      runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
+
+      // Add visual feedback
+      scale.value = withTiming(0.9, { duration: 100 });
+      opacity.value = withTiming(0.8, { duration: 100 });
+    })
+    .onEnd(() => {
+      scale.value = withSpring(1, { damping: 8, stiffness: 300 });
+      opacity.value = withTiming(1, { duration: 200 });
+      runOnJS(handlePlayPress)();
+    });
 
   if (loading)
     return (
@@ -107,16 +196,26 @@ const Details = () => {
             resizeMode="stretch"
           />
 
-          <TouchableOpacity 
-            className="absolute bottom-5 right-5 rounded-full size-14 bg-white flex items-center justify-center"
-            onPress={handlePlayPress}
-          >
-            <Image
-              source={icons.play}
-              className="w-6 h-7 ml-1"
-              resizeMode="stretch"
-            />
-          </TouchableOpacity>
+          <GestureDetector gesture={tapGesture}>
+            <Animated.View
+              style={animatedStyle}
+              className="absolute bottom-5 right-5 rounded-full size-14 bg-gradient-to-br from-white to-gray-100 flex items-center justify-center shadow-2xl border border-gray-200"
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#000" />
+              ) : (
+                <View className="flex items-center justify-center">
+                  <Image
+                    source={icons.play}
+                    className="w-6 h-7 ml-1"
+                    resizeMode="stretch"
+                  />
+                  {/* Add a subtle glow effect */}
+                  <View className="absolute inset-0 rounded-full bg-white opacity-20" />
+                </View>
+              )}
+            </Animated.View>
+          </GestureDetector>
         </View>
 
         <View className="flex-col items-start justify-center mt-5 px-5">
