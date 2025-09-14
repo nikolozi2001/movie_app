@@ -1,7 +1,10 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
+  Linking,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -10,7 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { icons } from "@/constants/icons";
-import { fetchMovieDetails } from "@/services/api";
+import { fetchMovieDetails, fetchMovieVideos } from "@/services/api";
 import useFetch from "@/services/usefetch";
 
 interface MovieInfoProps {
@@ -30,10 +33,60 @@ const MovieInfo = ({ label, value }: MovieInfoProps) => (
 const Details = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams();
+  const [videos, setVideos] = useState<MovieVideo[]>([]);
 
   const { data: movie, loading } = useFetch(() =>
     fetchMovieDetails(id as string)
   );
+
+  useEffect(() => {
+    const loadVideos = async () => {
+      try {
+        const movieVideos = await fetchMovieVideos(id as string);
+        setVideos(movieVideos);
+      } catch (error) {
+        console.error("Error loading videos:", error);
+      }
+    };
+
+    if (id) {
+      loadVideos();
+    }
+  }, [id]);
+
+  const handlePlayPress = async () => {
+    console.log("Play button pressed");
+    console.log("Available videos:", videos.length);
+
+    const trailer = videos.find(
+      (video) => video.type === "Trailer" && video.site === "YouTube"
+    );
+
+    console.log("Found trailer:", trailer);
+
+    if (trailer) {
+      try {
+        const youtubeUrl = `https://www.youtube.com/watch?v=${trailer.key}`;
+        console.log("Opening YouTube URL:", youtubeUrl);
+
+        await Linking.openURL(youtubeUrl);
+      } catch (error) {
+        console.error("Error opening trailer:", error);
+        Alert.alert("Error", "Unable to open trailer");
+      }
+    } else if (movie?.homepage) {
+      try {
+        console.log("No trailer found, opening homepage:", movie.homepage);
+        await Linking.openURL(movie.homepage);
+      } catch (error) {
+        console.error("Error opening homepage:", error);
+        Alert.alert("Error", "Unable to open movie homepage");
+      }
+    } else {
+      console.log("No trailer or homepage available");
+      Alert.alert("No Trailer Available", "Trailer not available for this movie");
+    }
+  };
 
   if (loading)
     return (
@@ -54,7 +107,10 @@ const Details = () => {
             resizeMode="stretch"
           />
 
-          <TouchableOpacity className="absolute bottom-5 right-5 rounded-full size-14 bg-white flex items-center justify-center">
+          <TouchableOpacity 
+            className="absolute bottom-5 right-5 rounded-full size-14 bg-white flex items-center justify-center"
+            onPress={handlePlayPress}
+          >
             <Image
               source={icons.play}
               className="w-6 h-7 ml-1"

@@ -69,6 +69,17 @@ interface MovieDetails {
   video: boolean;
   vote_average: number;
   vote_count: number;
+  videos?: MovieVideo[];
+}
+
+interface MovieVideo {
+  id: string;
+  key: string;
+  name: string;
+  site: string;
+  type: string;
+  official: boolean;
+  published_at: string;
 }
 
 interface TrendingCardProps {
