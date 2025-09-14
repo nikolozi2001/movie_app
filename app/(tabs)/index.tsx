@@ -85,7 +85,7 @@ const Index = () => {
         <ScrollView
           className="flex-1 px-5"
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ minHeight: "100%", paddingBottom: 10 }}
+          contentContainerStyle={{ minHeight: "100%", paddingBottom: 100 }}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -168,7 +168,7 @@ const Index = () => {
                   paddingRight: 5,
                   marginBottom: 10,
                 }}
-                className="mt-2 pb-32"
+                className="mt-2 pb-20"
                 scrollEnabled={false}
               />
             </>
