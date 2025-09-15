@@ -3,14 +3,28 @@ import { FavoritesProvider } from "@/hooks/useFavorites";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
 import { useEffect } from "react";
-import { StatusBar } from "react-native";
+import { AppState, StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "./global.css";
 
 export default function RootLayout() {
   useEffect(() => {
-    NavigationBar.setVisibilityAsync("hidden");
+    const hideNavigationBar = async () => {
+      await NavigationBar.setVisibilityAsync("hidden");
+    };
+
+    hideNavigationBar();
+
+    const subscription = AppState.addEventListener('change', (nextAppState) => {
+      if (nextAppState === 'active') {
+        hideNavigationBar();
+      }
+    });
+
+    return () => {
+      subscription?.remove();
+    };
   }, []);
 
   return (
